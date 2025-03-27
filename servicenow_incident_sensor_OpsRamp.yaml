@@ -2,7 +2,7 @@
   class_name: "ServiceNowIncidentSensorOpsRamp"
   entry_point: "servicenow_incident_sensor_OpsRamp.py"
   description: "Sensor to find and keep a list of all the incidents in ServiceNow whcih are genrated by OpsRamp"
-  poll_interval: 60
+  poll_interval: 180
   enabled: true
   trigger_types:
 
@@ -184,7 +184,7 @@
             format: "Short description name from ITSM to pass into the database entry"
 
     -
-      name: "linux_cpu_high"
+      name: "high_cpu_unix"
       description: "If an incident is created for Unix high CPU utilization then check the incident type, try running cleanup, and update the incident with results"
       payload_schema:
         type: "object"

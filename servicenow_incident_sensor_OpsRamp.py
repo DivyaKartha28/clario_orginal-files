@@ -74,6 +74,7 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
         sn_inc_endpoint = sn_inc_endpoint + '^ORshort_descriptionLIKEsystem.os.uptime'
         sn_inc_endpoint = sn_inc_endpoint + '^ORshort_descriptionLIKEPacket%20Loss'
         sn_inc_endpoint = sn_inc_endpoint + '^ORshort_descriptionLIKEIs%20not%20responding%20to%20Ping'
+        sn_inc_endpoint = sn_inc_endpoint + '^ORdescriptionLIKEsystem.ping'
 
 
         # Windows Disk usage
@@ -93,8 +94,8 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
 
         sn_inc_url = "https://{0}{1}".format(self.sn_url,sn_inc_endpoint)
         self._logger.info('INC url: ' + str(sn_inc_url))
-        proxy1 = { 'https': 'http://proxy.clarios.com:443' }
-        sn_result = requests.request('GET',sn_inc_url,auth=(self.sn_username, self.sn_password),headers=self.servicenow_headers,proxies=proxy1)
+        #proxy1 = { 'https': 'http://proxy.clarios.com:443' }
+        sn_result = requests.request('GET',sn_inc_url,auth=(self.sn_username, self.sn_password),headers=self.servicenow_headers)
 
         sn_result.raise_for_status()
         sn_incidents = sn_result.json()['result']
@@ -231,7 +232,7 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
         # ci_address = Find_Before.strip()
 
         # Windows System UpTime , Windows Hostdown Ping failure
-        if ('system.os.uptime' in short_desc_lower or 'packet loss' in short_desc_lower or 'is not responding to ping' in short_desc_lower ) and ('wintel' in assign_group.lower() or 'intel' in assign_group.lower() or 'unix' in assign_group.lower() or 'clarios-uscan fieldservice l3' in assign_group.lower() or 'clarios-hypervisor support' in assign_group.lower() or 'nttds-central hypervisor support' in assign_group.lower() or 'nttds-publiccloudops' in assign_group.lower() or 'nttds-is storage infrastructure' in assign_group.lower() or 'nttds-storage l1' in assign_group.lower() ):
+        if ('system.os.uptime' in short_desc_lower or 'packet loss' in short_desc_lower or 'is not responding to ping' in short_desc_lower  or 'system.ping' in desc ) and ('wintel' in assign_group.lower() or 'intel' in assign_group.lower() or 'unix' in assign_group.lower() or 'clarios-uscan fieldservice l' in assign_group.lower() or 'clarios-hypervisor support' in assign_group.lower() or 'nttds-central hypervisor support' in assign_group.lower() or 'nttds-publiccloudops' in assign_group.lower() or 'nttds-is storage infrastructure' in assign_group.lower() or 'nttds-storage l1' in assign_group.lower() ):
             insertto_datastore = "true"
             if ('unix' in assign_group.lower() or 'clarios-hypervisor support' in assign_group.lower() or 'nttds-central hypervisor support' in assign_group.lower() or 'nttds-publiccloudops' in assign_group.lower() or 'nttds-is storage infrastructure' in assign_group.lower() or 'nttds-storage l1' in assign_group.lower()):
                 os_type='linux'
@@ -258,17 +259,17 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
                     Find_Before = self.beforeString(Find_After, ' ')
                     ci_address = Find_Before.strip()
 
-            elif 'packet loss' in short_desc_lower:
-                rec_short_desc = 'Packet Loss'
-                rec_detailed_desc = 'Packet Loss'
-                
-                if configuration_item_name:
-                    ci_address = str(configuration_item_name).lower()
-                else:
-                    Find_After = self.afterString(short_desc, "OpsRamp ")
-                    Find_After = Find_After.strip()
-                    Find_Before = self.beforeString(Find_After, ' ')
-                    ci_address = Find_Before.strip()
+            #elif 'packetssss losssss' in short_desc_lower:
+             #   rec_short_desc = 'Packet Loss'
+             #   rec_detailed_desc = 'Packet Loss'
+             #   
+             #   if configuration_item_name:
+             #       ci_address = str(configuration_item_name).lower()
+             #   else:
+             #       Find_After = self.afterString(short_desc, "OpsRamp ")
+             #       Find_After = Find_After.strip()
+             #       Find_Before = self.beforeString(Find_After, ' ')
+             #       ci_address = Find_Before.strip()
 
                 
 
@@ -284,8 +285,22 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
                     Find_Before = self.beforeString(Find_After, ' ')
                     ci_address = Find_Before.strip()
 
+            elif 'system.ping' in desc:
+                rec_short_desc = 'system.ping'
+                rec_detailed_desc = 'system.ping'
+                self._logger.info(configuration_item_name)
+
+                if (configuration_item_name == '' or configuration_item_name == 'Event_CI_Not Found'):
+                    self._logger.info('inside if')
+                    ci_address = desc.lower().split("ip:")[-1].replace('\n', '').replace('\r', '').split("metric")[0]
+                else:
+                    self._logger.info('inside else')
+                    ci_address = configuration_item_name
+
             ci_address = ci_address.strip()
             ci_address = ci_address.lower()
+
+            
 
 
             payload = {
@@ -364,6 +379,7 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
 
         # Linux High CPU
         elif ('system.cpu.usage.utilization' in short_desc_lower) and ('linux' in assign_group.lower() or 'unix' in assign_group.lower() or 'nttds-publiccloudops' in assign_group.lower()):
+            self._logger.info('unix cpu block')
 
             insertto_datastore = "true"
             trigger_action = 'true'
@@ -407,7 +423,7 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
                 'incident_state': inc['incident_state'],
                 'os_type': 'linux',
                 'short_desc': inc['short_description'],
-                'threshold_percent': threshold,
+                'threshold_percent': '85',
                 'rec_short_desc': rec_short_desc,
                 'rec_detailed_desc': rec_detailed_desc,
                 'configuration_item_name': configuration_item_name
