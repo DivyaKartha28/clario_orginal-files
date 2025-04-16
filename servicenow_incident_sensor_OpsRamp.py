@@ -676,13 +676,11 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
                 ci_address = ci_address.strip()
             else:
                 ci_address = configuration_item_name
-
-            if ('nttds-wintel global l1' in assign_group.lower() or 'clarios-uscan fieldservice l2' in assign_group.lower() or  'clarios-uscan fieldservice l3' in assign_group.lower()):
-                support_group = self.get_support_group(inc)
-                if 'wintel' in assign_group.lower():
-                    trigger_action = 'true'
-                else:
-                    trigger_action = 'false'
+            assign_group = self.get_support_group(inc)
+            if ('nttds-wintel global l1' in assign_group.lower() or 'clarios-uscan fieldservice l2' in assign_group.lower() or 'clarios-uscan fieldservice l3' in assign_group.lower()): 
+                trigger_action = 'true'
+            else:
+                trigger_action = 'false'
             
             rec_short_desc = 'OpsRamp agent is offline'
             rec_detailed_desc = 'OpsRamp agent is offline'
