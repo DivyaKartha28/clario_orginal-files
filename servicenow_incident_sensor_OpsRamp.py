@@ -677,7 +677,7 @@ class ServiceNowIncidentSensorOpsRamp(PollingSensor):
             else:
                 ci_address = configuration_item_name
             support_group = self.get_support_group(inc)
-            if ('nttds-wintel global l1' in assign_group.lower() or 'clarios-uscan fieldservice l2' in assign_group.lower() or 'clarios-uscan fieldservice l3' in assign_group.lower()): 
+            if (('nttds-wintel global l1' in assign_group.lower()) or ('clarios-uscan fieldservice l2' in assign_group.lower()) or ('clarios-uscan fieldservice l3' in assign_group.lower())): 
                 trigger_action = 'true'
             else:
                 trigger_action = 'false'
